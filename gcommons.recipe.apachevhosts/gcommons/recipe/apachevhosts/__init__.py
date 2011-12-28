@@ -18,6 +18,7 @@ default_template = """
 # Last update:  %(timestamp)s
 #
 #  listenaddress= * 
+#  listenport   = 80 
 #  serveradmin  = webmaster@yourdomain.com 
 #  absdir       = /http/sites/sitename
 #  url          = mysite.com  
@@ -34,64 +35,49 @@ default_template = """
 #               /cgitools  %(absdir)s/cgitools 
   
 
-Listen %(listenaddress)s:80
+Listen %(listenaddress)s:%(listenport)s 
 
-<VirtualHost %(listenaddress)s>
-ServerAdmin %(serveradmin)s
-DocumentRoot %(absdir}%/htdocs
-ServerName %(url)s 
+<VirtualHost %(listenaddress)s:%(listenport)s>
+   ServerAdmin %(serveradmin)s
+   DocumentRoot %(absdir)s%/htdocs
 
-ProxyRequests Off
-<Proxy *>
-  Order deny,allow
-  Allow from all
-</Proxy>
+   ServerName %(url)s 
+   %(urlalias)s
 
 
-ProxyPass / %(proxypath)s
-ProxyPassReverse / %(ProxyPathRev)s 
+   ProxyRequests %(ProxyRequests)s 
+   <Proxy *>
+     Order deny,allow
+     Allow from all
+   </Proxy>
 
 
-
-ErrorLog %(reldir)s/logs/error_log
-CustomLog %(reldir)s/logs/access_log custom
-ScriptAlias /cgi-bin %(absdir)s/cgi-bin
-ScriptAlias /cgibin %(absdir)s/cgibin
-ScriptAlias /cgibin/12 %(absdir)s/cgibin/12
-ErrorDocument 404 http://%(servername)s
-
-<Directory %(reldir)s/htdocs>
-AddType application/x-httpd-php .php3
-Options +Includes
-</Directory>
-
-    <Directory />
-        Options FollowSymLinks
-        AllowOverride None
-    </Directory>
-
-
-</VirtualHost>
+   ProxyPass / %(proxypath)s
+   ProxyPassReverse / %(ProxyPathRev)s 
 
 
 
-<VirtualHost *:80>
-    ServerName %(url)s
-    %(urlalias)s
+   ErrorLog %(reldir)s/logs/error_log
+   CustomLog %(reldir)s/logs/access_log custom
 
-    ProxyRequests Off
-    <Proxy *>
-        Order deny,allow
-        Allow from all
-    </Proxy>
 
-    ProxyPass / http://%(httpaddress)s/VirtualHostBase/http/%(url)s:80%(path)s/VirtualHostRoot/
-    ProxyPassReverse / http://%(httpaddress)s/VirtualHostBase/http/%(url)s:80%(path)s/VirtualHostRoot/
 
-    <Directory />
-        Options FollowSymLinks
-        AllowOverride None
-    </Directory>
+   ScriptAlias /cgi-bin %(absdir)s/cgi-bin
+   ScriptAlias /cgibin %(absdir)s/cgibin
+   ScriptAlias /cgibin/12 %(absdir)s/cgibin/12
+
+
+   ErrorDocument 404 http://%(servername)s
+
+   <Directory %(reldir)s/htdocs>
+     AddType application/x-httpd-php .php3
+     Options +Includes
+   </Directory>
+
+   <Directory />
+     Options FollowSymLinks
+     AllowOverride None
+   </Directory>
 
 </VirtualHost>
 

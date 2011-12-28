@@ -6,6 +6,13 @@
 
   * Sample Local buildout file in README.txt 
  
+- Fixed Bug - added return value to update in  gcommons/recipe/apachevhosts/__init__.py
+
+    def update(self):
+        """Updater"""
+        return self.writeVhosts()
+
+
 
 
 0.1 (xxxx-xx-xx)
