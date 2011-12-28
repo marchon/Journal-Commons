@@ -17,57 +17,51 @@ default_template = """
 # Buildout part: %(part)s
 # Last update:  %(timestamp)s
 #
-#  listenaddress= * 
-#  listenport   = 80 
-#  serveradmin  = webmaster@yourdomain.com 
+#  listenaddress= *
+#  listenport   = 80
+#  serveradmin  = webmaster@yourdomain.com
 #  absdir       = /http/sites/sitename
-#  url          = mysite.com  
-#  reldir       = /http/sites/sitename 
-#  urlaliases   = www.mysite.com other.sitename.com www.other.sitename.com 
-#      
-#  ProxyRequets = Off  
+#  url          = mysite.com
+#  reldir       = /http/sites/sitename
+#  urlaliases   = www.mysite.com other.sitename.com www.other.sitename.com
+#
+#  ProxyRequets = Off
 #  ProxyPath    = http://%(httpaddress)s/VirtualHostBase/http/%(url)s:80%(path)s/VirtualHostRoot/
-#  ProxyPathRev = http://%(httpaddress)s/VirtualHostBase/http/%(url)s:80%(path)s/VirtualHostRoot/ 
-# 
+#  ProxyPathRev = http://%(httpaddress)s/VirtualHostBase/http/%(url)s:80%(path)s/VirtualHostRoot/
+#
 #  script-alias
-#               /cgi-bin   %(absdir)s/cgi-bin 
-#               /cgibin    %(absdir)s/cgibin 
-#               /cgitools  %(absdir)s/cgitools 
-  
+#               /cgi-bin   %(absdir)s/cgi-bin
+#               /cgibin    %(absdir)s/cgibin
+#               /cgitools  %(absdir)s/cgitools
 
-Listen %(listenaddress)s:%(listenport)s 
 
+Listen %(listenaddress)s:%(listenport)s
 <VirtualHost %(listenaddress)s:%(listenport)s>
    ServerAdmin %(serveradmin)s
-   DocumentRoot %(absdir)s%/htdocs
+   DocumentRoot %(absdir)s/htdocs
 
-   ServerName %(url)s 
+   ServerName %(url)s
    %(urlalias)s
 
 
-   ProxyRequests %(ProxyRequests)s 
+   ProxyRequests %(ProxyRequests)s
    <Proxy *>
      Order deny,allow
      Allow from all
    </Proxy>
 
 
-   ProxyPass / %(proxypath)s
-   ProxyPassReverse / %(ProxyPathRev)s 
-
+   ProxyPass / %(ProxyPath)s
+   ProxyPassReverse / %(ProxyPathRev)s
 
 
    ErrorLog %(reldir)s/logs/error_log
    CustomLog %(reldir)s/logs/access_log custom
 
+   %(localscriptalias)s
 
 
-   ScriptAlias /cgi-bin %(absdir)s/cgi-bin
-   ScriptAlias /cgibin %(absdir)s/cgibin
-   ScriptAlias /cgibin/12 %(absdir)s/cgibin/12
-
-
-   ErrorDocument 404 http://%(servername)s
+   ErrorDocument 404 http://%(url)s
 
    <Directory %(reldir)s/htdocs>
      AddType application/x-httpd-php .php3
@@ -82,6 +76,7 @@ Listen %(listenaddress)s:%(listenport)s
 </VirtualHost>
 
 """
+
 
 class Recipe(object):
     """zc.buildout recipe"""
@@ -103,19 +98,50 @@ class Recipe(object):
         vhosts = self.options['vhosts']
         httpaddress =  self.options['http-address']
         outputdir = self.options['outputdir']
+        scriptalias = self.options['script-alias'] 
+
         prefix = self.options.get('prefix')
         postfix = self.options.get('postfix')
         template = self.options.get('template')
-        scriptalias = self.options.get('script-alias') 
+        
+
         absdir = self.options.get('absdir') 
 
         listenaddress= self.options.get('listenaddress') 
-        serveradmin  = self.options.get('serveradmin') 
+        listenport   = self.options.get('listenport') 
         url          = self.options.get('url') 
+        serveradmin  = self.options.get('serveradmin') 
         reldir       = self.options.get('reldir') 
         ProxyRequests= self.options.get('ProxyRequests') 
         ProxyPath    = self.options.get('ProxyPath')
         ProxyPathRev = self.options.get('ProxyPathRev') 
+     
+        if absdir is None: 
+           absdir = '%s/sitepath' % self.buildout['buildout']['directory']
+        
+        if listenaddress is None: 
+           listenaddress = '*'
+        
+        if listenport is None: 
+           listenport = '80'
+        
+        if url is None: 
+           url = 'localhost' 
+   
+        if serveradmin is None: 
+           serveradmin = 'webmaster@%s' % url
+
+        if reldir is None: 
+           reldir = absdir 
+
+        if ProxyRequests is None: 
+           ProxyRequests = 'Off'
+
+        if ProxyPath is None: 
+           ProxyPath = 'http://localhost:8000'
+
+        if ProxyPathRev is None: 
+           ProxyPathRev = 'http://localhost:8000'
 
 #
 #  script-alias
@@ -130,7 +156,7 @@ class Recipe(object):
         for line in scriptalias.split('\n'): 
             if len(line.split()):
                publicpath, localpath = line.split() 
-               localscriptalias = localscriptalias + 'ScriptAlias /%s %s/%s' % ( publicpath, absdir, localpath ) 
+               localscriptalias = localscriptalias + 'ScriptAlias /%s %s/%s\n   ' % ( publicpath, absdir, localpath ) 
                 
 
         for line in vhosts.split('\n'):
@@ -149,6 +175,19 @@ class Recipe(object):
         	values['url'] = url
         	values['part'] = self.name
         	values['timestamp'] = str(datetime.now())[0:16]
+
+                values['absdir']= absdir
+                values['listenaddress']= listenaddress 
+                values['listenport']= listenport 
+                values['url']= url 
+                values['serveradmin']= serveradmin 
+                values['reldir']= reldir 
+                values['ProxyRequests']= ProxyRequests
+                values['ProxyPath'] = ProxyPath 
+                values['ProxyPathRev'] = ProxyPathRev 
+                values['localscriptalias'] = localscriptalias 
+                if values['serveradmin']  == 'webmaster@localhost': 
+                   values['serveradmin'] = serveradmin = 'webmaster@%s' % url 
         	
         	# Provide non-'www.' alias directive
         	if url[0:4] == 'www.':
@@ -166,4 +205,3 @@ class Recipe(object):
         	out.close()
 
         return files
-

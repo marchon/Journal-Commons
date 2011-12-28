@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: gcommons.recipe.apachevhosts
-Version: 0.2
+Version: 0.2.01-
 Summary: buildout recipe that writes apache.conf virtual hosts
 Home-page: http://www.gcommons.org
 Author: Juan Grigea
@@ -9,8 +9,87 @@ License: AGPL
 Description: .. contents::
         
         
+        
+          Getting Started 
+          Sample Local buildout file
+        
+        --------------------------------------------------------------------------------------------
+        [buildout] 
+        develop = . 
+        parts= makesitedirs apache 
+        http-address = 127.0.0.1:8080
+        
+        
+        [makesitedirs]
+        recipe = z3c.recipe.mkdir
+        paths = foo/bar
+                /darkmatter/site
+                /journalcommons/site
+                /historicalmaterialism/site
+                ./parts/apache/conf.d/
+                
+        
+        
+        
+        [apache]
+        recipe = gcommons.recipe.apachevhosts
+        http-address = ${buildout:http-address}
+        postfix = test.gcommons.org
+        outputdir = parts/apache/conf.d/
+        vhosts =
+                darkmatter /darkmatter/site www.darkmatter.info
+                journalcommons /journalcommons/site www.gcommons.org
+                historicalmaterialism /historicalmaterialism/site www.historicalmaterialism.org
+        
+        
+        --------------------------------------------------------------------------------------------
+        
+        
+        
+        
+        
         Detailed Documentation
         **********************
+        
+        .. contents::
+        
+        
+        
+          Getting Started 
+          Sample Local buildout file
+        
+        --------------------------------------------------------------------------------------------
+        [buildout] 
+        develop = . 
+        parts= makesitedirs apache 
+        http-address = 127.0.0.1:8080
+        
+        
+        [makesitedirs]
+        recipe = z3c.recipe.mkdir
+        paths = foo/bar
+                /darkmatter/site
+                /journalcommons/site
+                /historicalmaterialism/site
+                ./parts/apache/conf.d/
+                
+        
+        
+        
+        [apache]
+        recipe = gcommons.recipe.apachevhosts
+        http-address = ${buildout:http-address}
+        postfix = test.gcommons.org
+        outputdir = parts/apache/conf.d/
+        vhosts =
+                darkmatter /darkmatter/site www.darkmatter.info
+                journalcommons /journalcommons/site www.gcommons.org
+                historicalmaterialism /historicalmaterialism/site www.historicalmaterialism.org
+        
+        
+        --------------------------------------------------------------------------------------------
+        
+        
         
         
         
@@ -18,24 +97,37 @@ Description: .. contents::
         ************
         
         Juan Grigea, Author
-        George Lambert, user 
         
+        marchon - George Lambert, user - adding documentation and quick start stuff 
+         
         
         Change history
         **************
-
+        
         0.2.01 (2011-12-28) 
         -------------------
-    
-        documentation and getting started materials.
-
-       
- 
+        
+        - Documentation and other minor changes for my own edification (shared with the world) 
+          [marchon (at) g(that big search company)(dot)com - aka:George Lambert ] 
+        
+          * Sample Local buildout file in README.txt 
+         
+        - Fixed Bug - added return value to update in  gcommons/recipe/apachevhosts/__init__.py
+        
+            def update(self):
+                """Updater"""
+                return self.writeVhosts()
+        
+        
+        
+        
         0.1 (xxxx-xx-xx)
         ----------------
         
         - Created recipe with ZopeSkel
-        [Juan Grigea]
+          [Juan Grigea]
+        
+        
         
         Download
         ********
