@@ -1,5 +1,17 @@
+0.2.01 (2011-12-28) 
+-------------------
+
+- Documentation and other minor changes for my own edification (shared with the world) 
+  [marchon (at) g(that big search company)(dot)com - aka:George Lambert ] 
+
+  * Sample Local buildout file in README.txt 
+ 
+
+
 0.1 (xxxx-xx-xx)
 ----------------
 
 - Created recipe with ZopeSkel
   [Juan Grigea]
+
+

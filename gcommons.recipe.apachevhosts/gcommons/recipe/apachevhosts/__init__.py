@@ -17,6 +17,64 @@ default_template = """
 # Buildout part: %(part)s
 # Last update:  %(timestamp)s
 #
+#  listenaddress= * 
+#  serveradmin  = webmaster@yourdomain.com 
+#  absdir       = /http/sites/sitename
+#  url          = mysite.com  
+#  reldir       = /http/sites/sitename 
+#  urlaliases   = www.mysite.com other.sitename.com www.other.sitename.com 
+#      
+#  ProxyRequets = Off  
+#  ProxyPath    = http://%(httpaddress)s/VirtualHostBase/http/%(url)s:80%(path)s/VirtualHostRoot/
+#  ProxyPathRev = http://%(httpaddress)s/VirtualHostBase/http/%(url)s:80%(path)s/VirtualHostRoot/ 
+# 
+#  script-alias
+#               /cgi-bin   %(absdir)s/cgi-bin 
+#               /cgibin    %(absdir)s/cgibin 
+#               /cgitools  %(absdir)s/cgitools 
+  
+
+Listen %(listenaddress)s:80
+
+<VirtualHost %(listenaddress)s>
+ServerAdmin %(serveradmin)s
+DocumentRoot %(absdir}%/htdocs
+ServerName %(url)s 
+
+ProxyRequests Off
+<Proxy *>
+  Order deny,allow
+  Allow from all
+</Proxy>
+
+
+ProxyPass / %(proxypath)s
+ProxyPassReverse / %(ProxyPathRev)s 
+
+
+
+ErrorLog %(reldir)s/logs/error_log
+CustomLog %(reldir)s/logs/access_log custom
+ScriptAlias /cgi-bin %(absdir)s/cgi-bin
+ScriptAlias /cgibin %(absdir)s/cgibin
+ScriptAlias /cgibin/12 %(absdir)s/cgibin/12
+ErrorDocument 404 http://%(servername)s
+
+<Directory %(reldir)s/htdocs>
+AddType application/x-httpd-php .php3
+Options +Includes
+</Directory>
+
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+
+
+</VirtualHost>
+
+
+
 <VirtualHost *:80>
     ServerName %(url)s
     %(urlalias)s
@@ -52,7 +110,7 @@ class Recipe(object):
 
     def update(self):
         """Updater"""
-        self.writeVhosts()
+        return self.writeVhosts()
         
     def writeVhosts(self):
         files = []
@@ -62,6 +120,32 @@ class Recipe(object):
         prefix = self.options.get('prefix')
         postfix = self.options.get('postfix')
         template = self.options.get('template')
+        scriptalias = self.options.get('script-alias') 
+        absdir = self.options.get('absdir') 
+
+        listenaddress= self.options.get('listenaddress') 
+        serveradmin  = self.options.get('serveradmin') 
+        url          = self.options.get('url') 
+        reldir       = self.options.get('reldir') 
+        ProxyRequests= self.options.get('ProxyRequests') 
+        ProxyPath    = self.options.get('ProxyPath')
+        ProxyPathRev = self.options.get('ProxyPathRev') 
+
+#
+#  script-alias
+#               /cgi-bin   %(absdir)s/cgi-bin
+#               /cgibin    %(absdir)s/cgibin
+#               /cgitools  %(absdir)s/cgitools
+
+
+
+        localscriptalias = '' 
+
+        for line in scriptalias.split('\n'): 
+            if len(line.split()):
+               publicpath, localpath = line.split() 
+               localscriptalias = localscriptalias + 'ScriptAlias /%s %s/%s' % ( publicpath, absdir, localpath ) 
+                
 
         for line in vhosts.split('\n'):
             if len(line.split()):

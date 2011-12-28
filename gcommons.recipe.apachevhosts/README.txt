@@ -1,17 +1,41 @@
 .. contents::
 
-.. Note to recipe author!
-   ---------------------
-   Update the following URLs to point to your:
-   
-   - code repository
-   - bug tracker 
-   - questions/comments feedback mail 
-   (do not set a real mail, to avoid spams)
 
-   Or remove it if not used.
 
-- Code repository: http://svn.somewhere.com/...
-- Questions and comments to somemailing_list
-- Report bugs at http://bug.somewhere.com/..
+  Getting Started 
+  Sample Local buildout file
+
+--------------------------------------------------------------------------------------------
+[buildout] 
+develop = . 
+parts= makesitedirs apache 
+http-address = 127.0.0.1:8080
+
+
+[makesitedirs]
+recipe = z3c.recipe.mkdir
+paths = foo/bar
+        /darkmatter/site
+        /journalcommons/site
+        /historicalmaterialism/site
+        ./parts/apache/conf.d/
+        
+
+
+
+[apache]
+recipe = gcommons.recipe.apachevhosts
+http-address = ${buildout:http-address}
+postfix = test.gcommons.org
+outputdir = parts/apache/conf.d/
+vhosts =
+        darkmatter /darkmatter/site www.darkmatter.info
+        journalcommons /journalcommons/site www.gcommons.org
+        historicalmaterialism /historicalmaterialism/site www.historicalmaterialism.org
+
+
+--------------------------------------------------------------------------------------------
+
+
+
 
